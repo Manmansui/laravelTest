@@ -1,3 +1,6 @@
+@extends('layout')
+
+@section('content')
 <h1>{{ $heading }}</h1>
 
 {{-- @if(count($listings)==0)
@@ -14,10 +17,12 @@
             </a>
         </h2>
 
-        <p>{{ $listing['description'] }}</p>
+        <p>{{ $listing['descriptions'] }}</p>
     @endforeach
 
     @else
     <p>No listings found.</p>
 
 @endunless
+
+@endsection
