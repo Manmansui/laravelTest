@@ -24,13 +24,68 @@ class ListingController extends Controller
         ]);
     }
 
+    //show edit form
+    public function edit(Listing $listing){
+        return view('listings.edit', [
+            'listing' => $listing
+        ]);
+    }
+
     //show create form
     public function create(){
         return view('listings.create');
     }
 
-    //store listing data
+    //delete listing
+    public function destroy(Listing $listing){
+        //make sure logged in user is the owner of the listing
+        // if($listing->user_id!=auth()->id()){
+        //     abort(403, 'Unauthorized Action');
+        // }
+
+        $listing->delete();
+        return redirect('/')->with('message', 'Listing deleted successfully');
+    }
+
+    //update listing data
+    public function update(Request $request, Listing $listing){
+        // dd($request->file('logo'));
+
+        //dd($listing->user_id);
+        // dd(auth()->id());
+
+        //make sure logged in user is the owner of the listing
+        // if($listing->user_id != auth()->id()){
+        //     abort(403, 'Unauthorized Action');
+        // }
+
+
+        $formField = $request->validate([
+            'title' => 'required',
+            'company' => ['required'],
+            'location' => 'required',
+            'descriptions' =>'required',
+            'website' =>'required',
+            'email' => ['required', 'email'],
+            'tags' =>'required',
+        ]);
+
+        if($request->hasFile('logo')){
+            $formField['logo'] = $request->file('logo')->store('logos', 'public');
+        }
+
+        // dd($formField);
+        // dd(Listing::create($formField));
+
+        $listing->update($formField);
+
+        return back()->with('message', 'Listing update successfully!');
+    }
+
+
+    //Create new listing
     public function store(Request $request){
+        // dd($request->file('logo'));
         $formField = $request->validate([
             'title' => 'required',
             'company' => ['required', Rule::unique('listings', 'company')],
@@ -45,8 +100,18 @@ class ListingController extends Controller
             $formField['logo'] = $request->file('logo')->store('logos', 'public');
         }
 
+        $formField['user_id'] = auth()->id();
+
+        // dd($formField);
+        // dd(Listing::create($formField));
+
         Listing::create($formField);
 
         return redirect('/')->with('message', 'Listing created successfully!');
+    }
+
+    //manage listing based on user
+    public function manage(Request $request, Listing $listing){
+        return view('listings.manage', ['listings' => auth()->user()->listing()->get()]);
     }
 }
